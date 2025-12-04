@@ -21,7 +21,7 @@ static Pixel * LoadOldGuildMarkImageFile()
 	int dataSize = 512 * 512 * sizeof(Pixel);
 	Pixel * dataPtr = (Pixel *) malloc(dataSize);
 
-	fread(dataPtr, dataSize, 1, fp);
+		if (fread(dataPtr, dataSize, 1, fp) == 0) return nullptr;
 
 	fclose(fp);
 
@@ -121,11 +121,15 @@ bool GuildMarkConvert(const std::vector<DWORD> & vecGuildID)
 
 	// 컨버트는 한번만 하면되므로 파일을 옮겨준다.
 #ifndef OS_WINDOWS
-	system("mv -f guild_mark.idx guild_mark.idx.removable");
-	system("mv -f guild_mark.tga guild_mark.tga.removable");
+		if (system("mv -f guild_mark.idx guild_mark.idx.removable") != 0) { }
+		
+		if (system("mv -f guild_mark.tga guild_mark.tga.removable") != 0) { }
+		
 #else
-	system("move /Y guild_mark.idx guild_mark.idx.removable");
-	system("move /Y guild_mark.tga guild_mark.tga.removable");
+	)if (system("move /Y guild_mark.idx guild_mark.idx.removable") != 0) { }
+		
+	)if (system("move /Y guild_mark.tga guild_mark.tga.removable") != 0) { }
+		
 #endif
 
 	sys_log(0, "Guild Mark Converting Complete.");

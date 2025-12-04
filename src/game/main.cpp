@@ -520,7 +520,9 @@ int start(int argc, char **argv)
 				printf("IP %s\n", g_szPublicIP);
 
 				optind++;
+				#ifdef OS_FREEBSD
 				optreset = 1;
+				#endif
 				break;
 
 			case 'p': // port
@@ -535,7 +537,9 @@ int start(int argc, char **argv)
 				printf("port %d\n", mother_port);
 
 				optind++;
+				#ifdef OS_FREEBSD
 				optreset = 1;
+				#endif
 				break;
 
 				// LOCALE_SERVICE
@@ -544,7 +548,9 @@ int start(int argc, char **argv)
 					if (optind < argc)
 					{
 						st_localeServiceName = argv[optind++];
+						#ifdef OS_FREEBSD
 						optreset = 1;
+						#endif
 					}
 				}
 				break;
@@ -575,7 +581,8 @@ int start(int argc, char **argv)
 	bVerbose = true;
 #endif
 	if (!bVerbose)
-		freopen("stdout", "a", stdout);
+		if (freopen("stdout", "a", stdout) == nullptr) { // Redirect error
+        }
 
 	bool is_thecore_initialized = thecore_init(passes_per_sec, heartbeat);
 

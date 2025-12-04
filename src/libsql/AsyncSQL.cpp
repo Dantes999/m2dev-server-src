@@ -236,7 +236,7 @@ void CAsyncSQL::Quit()
 	if (m_hThread)
 	{
 		pthread_join(m_hThread, NULL);
-		m_hThread = NULL;
+		m_hThread = 0;
 	}
 #else
 	if (m_hThread != INVALID_HANDLE_VALUE) {

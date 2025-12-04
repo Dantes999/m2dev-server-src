@@ -1203,7 +1203,7 @@ bool LoadClientVersion()
 		return false;
 
 	char buf[256];
-	fgets(buf, 256, fp);
+		if (fgets(buf, 256, fp) == NULL) return false;
 
 	char * p = strchr(buf, '\n');
 	if (p) *p = '\0';
@@ -1258,7 +1258,7 @@ void LoadStateUserCount()
 		return;
 
 	if (!LC_IsHongKong())
-		fscanf(fp, " %d %d ", &g_iFullUserCount, &g_iBusyUserCount);
+			if (fscanf(fp, " %d %d ", &g_iFullUserCount, &g_iBusyUserCount) != 2) return;
 
 	fclose(fp);
 }

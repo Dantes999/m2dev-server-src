@@ -146,7 +146,8 @@ void locale_init(const char *filename)
 
 	memset(buf, 0, i);
 
-	fread(buf, i - 1, sizeof(char), fp);
+        if (fread(buf, i - 1, sizeof(char), fp) == 0) { // File read error
+        }
 
 	fclose(fp);
 

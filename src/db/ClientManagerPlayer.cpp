@@ -84,9 +84,9 @@ size_t CreatePlayerSaveQuery(char * pszQuery, size_t querySize, TPlayerTable * p
 			"y = %d, "
 			"z = %d, "
 			"map_index = %d, "
-			"exit_x = %ld, "
-			"exit_y = %ld, "
-			"exit_map_index = %ld, "
+			"exit_x = %d, "
+			"exit_y = %d, "
+			"exit_map_index = %d, "
 			"hp = %d, "
 			"mp = %d, "
 			"stamina = %d, "
@@ -110,7 +110,7 @@ size_t CreatePlayerSaveQuery(char * pszQuery, size_t querySize, TPlayerTable * p
 			"part_hair = %d, "
 			"last_play = NOW(), "
 			"skill_group = %d, "
-			"alignment = %ld, "
+			"alignment = %d, "
 			"horse_level = %d, "
 			"horse_riding = %d, "
 			"horse_hp = %d, "
@@ -415,7 +415,7 @@ void CClientManager::ItemAward(CPeer * peer,char* login)
 		char* whyStr = pItemAward->szWhy;	//why 콜룸 읽기
 		char cmdStr[100] = "";	//why콜룸에서 읽은 값을 임시 문자열에 복사해둠
 		strcpy(cmdStr,whyStr);	//명령어 얻는 과정에서 토큰쓰면 원본도 토큰화 되기 때문
-		char command[20] = "";
+		static char command[20] = "";
 		strcpy(command,GetCommand(cmdStr));	// command 얻기		
 		if( !(strcmp(command,"GIFT") ))	// command 가 GIFT이면
 		{
@@ -429,7 +429,7 @@ void CClientManager::ItemAward(CPeer * peer,char* login)
 }
 char* CClientManager::GetCommand(char* str)
 {
-	char command[20] = "";
+	static char command[20] = "";
 	char* tok;
 
 	if( str[0] == '[' )
@@ -1186,7 +1186,7 @@ void CClientManager::QUERY_ADD_AFFECT(CPeer * peer, TPacketGDAddAffect * p)
 	   */
 	snprintf(queryStr, sizeof(queryStr),
 			"REPLACE INTO affect%s (dwPID, bType, bApplyOn, lApplyValue, dwFlag, lDuration, lSPCost) "
-			"VALUES(%u, %u, %u, %ld, %u, %ld, %ld)",
+			"VALUES(%u, %u, %u, %d, %u, %d, %d)",
 			GetTablePostfix(),
 			p->dwPID,
 			p->elem.dwType,

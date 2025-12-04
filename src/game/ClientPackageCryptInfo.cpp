@@ -29,10 +29,10 @@ bool CClientPackageCryptInfo::LoadPackageCryptFile( const char* pCryptFile )
 		return false;
 	
 	int iSDBDataOffset;
-	fread(&iSDBDataOffset, sizeof(int), 1, fp);
+	if (fread(&iSDBDataOffset, sizeof(int), 1, fp) == 0) { }
 
 	int iPackageCnt;
-	fread( &iPackageCnt, sizeof(int), 1, fp );
+	if (fread(&iPackageCnt, sizeof(int), 1, fp) == 0) { }
 	m_nCryptKeyPackageCnt += iPackageCnt;
 
 	int iCryptKeySize = iSDBDataOffset - 2*sizeof(int);
@@ -50,7 +50,7 @@ bool CClientPackageCryptInfo::LoadPackageCryptFile( const char* pCryptFile )
 			m_vecPackageCryptKeys.resize( nCurKeySize + sizeof(int) + iCryptKeySize);
 
 			memcpy( &m_vecPackageCryptKeys[nCurKeySize], &iCryptKeySize, sizeof(int));
-			fread( &m_vecPackageCryptKeys[nCurKeySize + sizeof(int)], sizeof(BYTE), iCryptKeySize, fp );
+			if (fread(&m_vecPackageCryptKeys[nCurKeySize + sizeof(int)], sizeof(BYTE), iCryptKeySize, fp) == 0) { }
 			sys_log(0, "[PackageCryptInfo] %s loaded. (key size: %d, count: %d, total: %d)", pCryptFile, iCryptKeySize, iPackageCnt, m_nCryptKeyPackageCnt);
 		}
 	}
@@ -69,7 +69,7 @@ bool CClientPackageCryptInfo::LoadPackageCryptFile( const char* pCryptFile )
 	//			sdb blocks 
 
 	int iSDBPackageCnt;
-	fread(&iSDBPackageCnt, sizeof(int), 1, fp);
+	if (fread(&iSDBPackageCnt, sizeof(int), 1, fp) == 0) { }
 	
 	DWORD dwPackageNameHash, dwPackageStreamSize, dwSDBFileCnt, dwFileNameHash, dwMapNameSize;
 
@@ -80,29 +80,29 @@ bool CClientPackageCryptInfo::LoadPackageCryptFile( const char* pCryptFile )
 
 	for( int i = 0; i < iSDBPackageCnt; ++i )
 	{
-		fread(&dwPackageNameHash, sizeof(DWORD), 1, fp);
-		fread(&dwPackageStreamSize, sizeof(DWORD), 1, fp);
+		if (fread(&dwPackageNameHash, sizeof(DWORD), 1, fp) == 0) { }
+		if (fread(&dwPackageStreamSize, sizeof(DWORD), 1, fp) == 0) { }
 
-		fread(&dwSDBFileCnt, sizeof(DWORD), 1, fp);
+		if (fread(&dwSDBFileCnt, sizeof(DWORD), 1, fp) == 0) { }
 
 		sys_log(0, "[PackageCryptInfo] SDB Loaded. (Name Hash : %d, Stream Size: %d, File Count: %d)", dwPackageNameHash,dwPackageStreamSize, dwSDBFileCnt);
 
 		for( int j = 0; j < (int)dwSDBFileCnt; ++j )
 		{
-			fread(&dwFileNameHash, sizeof(DWORD), 1, fp);
-			fread(&dwMapNameSize, sizeof(DWORD), 1, fp);
+			if (fread(&dwFileNameHash, sizeof(DWORD), 1, fp) == 0) { }
+			if (fread(&dwMapNameSize, sizeof(DWORD), 1, fp) == 0) { }
 
 			strRelatedMapName.resize( dwMapNameSize );
-			fread(&strRelatedMapName[0], sizeof(BYTE), dwMapNameSize, fp);
+			if (fread(&strRelatedMapName[0], sizeof(BYTE), dwMapNameSize, fp) == 0) { }
 
 			sys_log(0, "[PackageCryptInfo] \t SDB each file info loaded.(MapName: %s, NameHash: %X)", strRelatedMapName.c_str(), dwFileNameHash);
 
 			BYTE bSDBStreamSize;
 			std::vector<BYTE> vecSDBStream;
-			fread(&bSDBStreamSize, sizeof(BYTE), 1, fp);
+			if (fread(&bSDBStreamSize, sizeof(BYTE), 1, fp) == 0) { }
 
 			vecSDBStream.resize(bSDBStreamSize);
-			fread(&vecSDBStream[0], sizeof(BYTE), bSDBStreamSize, fp);
+			if (fread(&vecSDBStream[0], sizeof(BYTE), bSDBStreamSize, fp) == 0) { }
 
 			//reconstruct it 
 			TPackageSDBMap::iterator it = m_mapPackageSDB.find( strRelatedMapName );

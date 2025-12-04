@@ -384,7 +384,7 @@ bool SECTREE_MANAGER::LoadMapRegion(const char * c_pszFileName, TMapSetting & r_
 	int iX=0, iY=0;
 	PIXEL_POSITION pos[3] = { {0,0,0}, {0,0,0}, {0,0,0} };
 
-	fscanf(fp, " %d %d ", &iX, &iY);
+		if (fscanf(fp, " %d %d ", &iX, &iY) != 2) { }
 
 	int iEmpirePositionCount = fscanf(fp, " %d %d %d %d %d %d ", 
 			&pos[0].x, &pos[0].y,
@@ -459,8 +459,8 @@ bool SECTREE_MANAGER::LoadAttribute(LPSECTREE_MAP pkMapSectree, const char * c_p
 	}
 
 	int32_t iWidth, iHeight;
-	fread(&iWidth, sizeof(int32_t), 1, fp);
-	fread(&iHeight, sizeof(int32_t), 1, fp);
+		if (fread(&iWidth, sizeof(int32_t), 1, fp) == 0) { }
+		if (fread(&iHeight, sizeof(int32_t), 1, fp) == 0) { }
 
 	int maxMemSize = LZOManager::instance().GetMaxCompressedSize(sizeof(DWORD) * (SECTREE_SIZE / CELL_SIZE) * (SECTREE_SIZE / CELL_SIZE));
 
@@ -516,8 +516,8 @@ bool SECTREE_MANAGER::LoadAttribute(LPSECTREE_MAP pkMapSectree, const char * c_p
 				return false;
 			}
 
-			fread(&uiSize, sizeof(uint32_t), 1, fp);
-			fread(abComp, sizeof(uint8_t), uiSize, fp);
+				if (fread(&uiSize, sizeof(uint32_t), 1, fp) == 0) { }
+				if (fread(abComp, sizeof(uint8_t), uiSize, fp) == 0) { }
 
 			//LZOManager::instance().Decompress(abComp, uiSize, (BYTE *) tree->GetAttributePointer(), &uiDestSize);
 			uiDestSize = sizeof(DWORD) * maxMemSize;
@@ -744,7 +744,7 @@ int SECTREE_MANAGER::Build(const char * c_pszListFileName, const char* c_pszMapB
 		return 0;
 
 	char buf[256 + 1];
-	char szFilename[256];
+	char szFilename[512];
 	char szMapName[256];
 	int iIndex;
 

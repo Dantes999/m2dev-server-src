@@ -18,7 +18,7 @@ void CGuildMarkManager::__DeleteImage(CGuildMarkImage * pkImgDel)
 CGuildMarkManager::CGuildMarkManager()
 {
 	// 남은 mark id 셋을 만든다. (서버용)
-	for (DWORD i = 0; i < MAX_IMAGE_COUNT * CGuildMarkImage::MARK_TOTAL_COUNT; ++i)
+	for (DWORD i = 0; i < (int)MAX_IMAGE_COUNT * (int)CGuildMarkImage::MARK_TOTAL_COUNT; ++i)
 		m_setFreeMarkID.insert(i);
 }
 
@@ -103,7 +103,7 @@ void CGuildMarkManager::LoadMarkImages()
 	{
 		DWORD markID = it->second;
 
-		if (markID < MAX_IMAGE_COUNT * CGuildMarkImage::MARK_TOTAL_COUNT)
+		if (markID < (int)MAX_IMAGE_COUNT * (int)CGuildMarkImage::MARK_TOTAL_COUNT)
 			isMarkExists[markID / CGuildMarkImage::MARK_TOTAL_COUNT] = true;
 	}
 
@@ -151,7 +151,7 @@ CGuildMarkImage * CGuildMarkManager::__GetImage(DWORD imgIdx)
 
 bool CGuildMarkManager::AddMarkIDByGuildID(DWORD guildID, DWORD markID)
 {
-	if (markID >= MAX_IMAGE_COUNT * CGuildMarkImage::MARK_TOTAL_COUNT)
+	if (markID >= (int)MAX_IMAGE_COUNT * (int)CGuildMarkImage::MARK_TOTAL_COUNT)
 		return false;
 
 	//sys_log(0, "MarkManager: guild_id=%d mark_id=%d", guildID, markID);
@@ -330,18 +330,18 @@ bool CGuildMarkManager::LoadSymbol(const char* filename)
 	else
 	{
 		DWORD symbolCount;
-		fread(&symbolCount, 4, 1, fp);
+			if (fread(&symbolCount, 4, 1, fp) == 0) return false;
 
 		for (DWORD i = 0; i < symbolCount; i++)
 		{
 			DWORD guildID;
 			DWORD dwSize;
-			fread(&guildID, 4, 1, fp);
-			fread(&dwSize, 4, 1, fp);
+					if (fread(&guildID, 4, 1, fp) == 0) return false;
+					if (fread(&dwSize, 4, 1, fp) == 0) return false;
 
 			TGuildSymbol gs;
 			gs.raw.resize(dwSize);
-			fread(&gs.raw[0], 1, dwSize, fp);
+					if (fread(&gs.raw[0], 1, dwSize, fp) == 0) return false;
 			gs.crc = GetCRC32(reinterpret_cast<const char*>(&gs.raw[0]), dwSize);
 			m_mapSymbol.insert(std::make_pair(guildID, gs));
 		}

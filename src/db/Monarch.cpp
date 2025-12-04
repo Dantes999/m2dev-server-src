@@ -129,7 +129,7 @@ bool CMonarch::AddMoney(int Empire, int64_t Money)
 	int64_t Money64 = m_MonarchInfo.money[Empire];
 
 	char szQuery[1024];	
-	snprintf(szQuery, sizeof(szQuery), "UPDATE monarch set money=%lld where empire=%d", Money64, Empire);
+	snprintf(szQuery, sizeof(szQuery), "UPDATE monarch set money=%ld where empire=%d", Money64, Empire);
 
 	CDBManager::instance().AsyncQuery(szQuery);
 
@@ -145,7 +145,7 @@ bool CMonarch::DecMoney(int Empire, int64_t Money)
 	int64_t Money64 = m_MonarchInfo.money[Empire];
 
 	char szQuery[1024];	
-	snprintf(szQuery, sizeof(szQuery), "UPDATE monarch set money=%lld where empire=%d", Money64, Empire);
+	snprintf(szQuery, sizeof(szQuery), "UPDATE monarch set money=%ld where empire=%d", Money64, Empire);
 
 	CDBManager::instance().AsyncQuery(szQuery);
 	return true;
@@ -163,7 +163,7 @@ bool CMonarch::TakeMoney(int Empire, DWORD pid, int64_t Money)
 
 	char szQuery[1024];	
 	snprintf(szQuery, sizeof(szQuery), 
-			"UPDATE monarch set money=%lld; where empire=%d", m_MonarchInfo.money[Empire], Empire);
+			"UPDATE monarch set money=%ld; where empire=%d", m_MonarchInfo.money[Empire], Empire);
 
 	CDBManager::instance().AsyncQuery(szQuery);
 
@@ -237,7 +237,7 @@ bool CMonarch::SetMonarch(const char * name)
 
 	//db¿¡ ÀÔ·Â
 	snprintf(szQuery, sizeof(szQuery),
-					"REPLACE INTO monarch (empire, name, windate, money) VALUES(%d, %d, now(), %lld)", Empire, p->pid[Empire], p->money[Empire]);
+					"REPLACE INTO monarch (empire, name, windate, money) VALUES(%d, %d, now(), %ld)", Empire, p->pid[Empire], p->money[Empire]);
 
  	CDBManager::instance().AsyncQuery(szQuery, SQL_PLAYER);	
     return true;

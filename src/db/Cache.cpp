@@ -96,9 +96,9 @@ void CItemCache::OnFlush()
 		{
 			iLen += snprintf(szColumns + iLen, sizeof(szColumns) - iLen, ", socket0, socket1, socket2");
 			iValueLen += snprintf(szValues + iValueLen, sizeof(szValues) - iValueLen,
-					", %lu, %lu, %lu", p->alSockets[0], p->alSockets[1], p->alSockets[2]);
+					", %d, %d, %d", p->alSockets[0], p->alSockets[1], p->alSockets[2]);
 			iUpdateLen += snprintf(szUpdate + iUpdateLen, sizeof(szUpdate) - iUpdateLen,
-					", socket0=%lu, socket1=%lu, socket2=%lu", p->alSockets[0], p->alSockets[1], p->alSockets[2]);
+					", socket0=%d, socket1=%d, socket2=%d", p->alSockets[0], p->alSockets[1], p->alSockets[2]);
 		}
 
 		if (isAttr)
@@ -134,7 +134,7 @@ void CItemCache::OnFlush()
 					p->aAttr[6].bType, p->aAttr[6].sValue);
 		}
 
-		char szItemQuery[QUERY_MAX_LEN + QUERY_MAX_LEN];
+		char szItemQuery[QUERY_MAX_LEN * 3];
 		snprintf(szItemQuery, sizeof(szItemQuery), "REPLACE INTO item%s (%s) VALUES(%s)", GetTablePostfix(), szColumns, szValues);
 
 		if (g_test_server)	
