@@ -10,3 +10,5 @@
 // #define TW1X1_TEST                 // tw1x1 test server features
 
 #endif
+
+#define ENABLE_INSTANCE_SYSTEM

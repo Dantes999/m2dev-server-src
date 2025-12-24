@@ -5287,7 +5287,15 @@ bool CHARACTER::WarpSet(long x, long y, long lPrivateMapIndex)
 			sys_err("Invalid map inedx %d, must be child of %d", lPrivateMapIndex, lMapIndex);
 			return false;
 		}
-
+#ifdef ENABLE_INSTANCE_SYSTEM
+		if (SECTREE_MANAGER::instance().GetMap(lPrivateMapIndex))
+		{
+			if (strcmp(g_szPublicIP, "0"))
+				lAddr = inet_addr(g_szPublicIP);
+			
+			wPort = mother_port;
+		}
+#endif
 		lMapIndex = lPrivateMapIndex;
 	}
 

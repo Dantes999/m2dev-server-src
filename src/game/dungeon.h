@@ -123,6 +123,7 @@ class CDungeon
 	IdType 		m_id; // <Factor>
 	DWORD		m_lOrigMapIndex;
 	DWORD		m_lMapIndex;
+	DWORD		m_dwCreateTime;
 
 	CHARACTER_SET	    m_set_pkCharacter;
 	std::map<std::string, int>  m_map_Flag;
@@ -185,7 +186,9 @@ class CDungeonManager : public singleton<CDungeonManager>
 	void		Destroy(CDungeon::IdType dungeon_id);
 	LPDUNGEON	Find(CDungeon::IdType dungeon_id);
 	LPDUNGEON	FindByMapIndex(long lMapIndex);
-
+#ifdef ENABLE_INSTANCE_SYSTEM
+	void		SendInstanceList(LPCHARACTER ch);
+#endif
 	private:
 	TDungeonMap	m_map_pkDungeon;
 	TMapDungeon m_map_pkMapDungeon;

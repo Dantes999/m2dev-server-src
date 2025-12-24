@@ -252,7 +252,16 @@ ACMD (do_use_item);
 ACMD (do_dragon_soul);
 ACMD (do_ds_list);
 ACMD (do_clear_affect);
-
+#ifdef ENABLE_INSTANCE_SYSTEM
+ACMD (do_instance_create);
+ACMD (do_instance_here);
+ACMD (do_instance_exit);
+ACMD (do_instance_home);
+ACMD (do_instance_lobby);
+ACMD (do_instance_refresh_map);
+ACMD (do_instance_list);
+ACMD (do_instance_close);
+#endif
 struct command_info cmd_info[] =
 {
 	{ "!RESERVED!",	NULL,			0,			POS_DEAD,	GM_IMPLEMENTOR	}, /* 반드시 이 것이 처음이어야 한다. */
@@ -541,6 +550,17 @@ struct command_info cmd_info[] =
 	{ "dragon_soul",				do_dragon_soul,				0,	POS_DEAD,	GM_PLAYER	},
 	{ "ds_list",				do_ds_list,				0,	POS_DEAD,	GM_PLAYER	},
 	{ "do_clear_affect", do_clear_affect, 	0, POS_DEAD,		GM_LOW_WIZARD},
+
+#ifdef ENABLE_INSTANCE_SYSTEM
+	{ "instance_create",		do_instance_create,		0,	POS_DEAD,	GM_PLAYER	},
+	{ "instance_here",		do_instance_here,		0,	POS_DEAD,	GM_PLAYER	},
+	{ "instance_exit",			do_instance_exit,		0,	POS_DEAD,	GM_PLAYER	},
+	{ "instance_home",		do_instance_home,		0,	POS_DEAD,	GM_PLAYER },
+	{ "instance_lobby",			do_instance_lobby,		0,	POS_DEAD,	GM_PLAYER },
+	{ "instance_refresh_map",	do_instance_refresh_map,	0,	POS_DEAD,	GM_PLAYER },
+	{ "instance_list",			do_instance_list,		0,	POS_DEAD,	GM_LOW_WIZARD },
+	{ "instance_close",			do_instance_close,		0,	POS_DEAD,	GM_LOW_WIZARD },
+#endif
 
 	{ "\n",		NULL,			0,			POS_DEAD,	GM_IMPLEMENTOR	}  /* 반드시 이 것이 마지막이어야 한다. */
 };

@@ -398,9 +398,23 @@ void CDungeonManager::Destroy(CDungeon::IdType dungeon_id)
 	if (pDungeon == NULL) {
 		return;
 	}
-	m_map_pkDungeon.erase(dungeon_id);
+	
+#ifdef ENABLE_INSTANCE_SYSTEM
+	
+	// 1. Cancel all events to prevent them from firing during destruction
+	if (pDungeon->deadEvent) { event_cancel(&pDungeon->deadEvent); }
+	if (pDungeon->exit_all_event_) { event_cancel(&pDungeon->exit_all_event_); }
+	if (pDungeon->jump_to_event_) { event_cancel(&pDungeon->jump_to_event_); }
 
+	// 2. Warp players out
+	pDungeon->ExitAll();
+#endif
+	m_map_pkDungeon.erase(dungeon_id);
+#ifdef ENABLE_INSTANCE_SYSTEM
+	long lMapIndex = pDungeon->GetMapIndex();
+#else
 	long lMapIndex = pDungeon->m_lMapIndex;
+#endif
 	m_map_pkMapDungeon.erase(lMapIndex);
 
 	DWORD server_timer_arg = lMapIndex;
@@ -429,9 +443,13 @@ LPDUNGEON CDungeonManager::FindByMapIndex(long lMapIndex)
 
 LPDUNGEON CDungeonManager::Create(long lOriginalMapIndex)
 {
+	sys_log(0,"DEBUG CDungeonManager::Create: Requesting private map for base index %ld", lOriginalMapIndex);
+
 	DWORD lMapIndex = SECTREE_MANAGER::instance().CreatePrivateMap(lOriginalMapIndex);
 
-	if (!lMapIndex) 
+	sys_log(0,"DEBUG CDungeonManager::Create: CreatePrivateMap returned %ld", lMapIndex);
+
+	if (!lMapIndex)
 	{
 		sys_log( 0, "Fail to Create Dungeon : OrginalMapindex %d NewMapindex %d", lOriginalMapIndex, lMapIndex );
 		return NULL;
@@ -452,6 +470,7 @@ LPDUNGEON CDungeonManager::Create(long lOriginalMapIndex)
 	m_map_pkDungeon.insert(std::make_pair(id, pDungeon));
 	m_map_pkMapDungeon.insert(std::make_pair(lMapIndex, pDungeon));
 
+	sys_log(0,"DEBUG CDungeonManager::Create: Successfully created dungeon ID %ld with map index %ld", id, lMapIndex);
 	return pDungeon;
 }
 
@@ -463,7 +482,54 @@ CDungeonManager::CDungeonManager()
 CDungeonManager::~CDungeonManager()
 {
 }
+#ifdef ENABLE_INSTANCE_SYSTEM
+void CDungeonManager::SendInstanceList(LPCHARACTER ch)
+{
+	if (!ch)
+		return;
 
+	ch->ChatPacket(CHAT_TYPE_COMMAND, "instance_list_start");
+
+	for (itertype(m_map_pkDungeon) it = m_map_pkDungeon.begin(); it != m_map_pkDungeon.end(); ++it)
+	{
+		LPDUNGEON pDungeon = it->second;
+		if (pDungeon)
+		{
+			DWORD duration = 0;
+			if (pDungeon->m_dwCreateTime > 0 && get_global_time() > pDungeon->m_dwCreateTime)
+			{
+				duration = (get_global_time() - pDungeon->m_dwCreateTime) / 60; // Duration in minutes
+			}
+			
+			std::string playerNames = "";
+			int count = 0;
+			
+			// We can't access m_set_pkCharacter directly because it's private.
+			// But we can add a method to CDungeon to get player names or just iterate here if we make it friend?
+			// CDungeonManager is already a friend of CDungeon.
+			
+			for (itertype(pDungeon->m_set_pkCharacter) itChar = pDungeon->m_set_pkCharacter.begin(); itChar != pDungeon->m_set_pkCharacter.end(); ++itChar)
+			{
+				LPCHARACTER pChar = *itChar;
+				if (pChar && pChar->IsPC())
+				{
+					if (count > 0)
+						playerNames += ",";
+					playerNames += pChar->GetName();
+					count++;
+				}
+			}
+			
+			if (count == 0)
+				playerNames = "Empty";
+
+			ch->ChatPacket(CHAT_TYPE_COMMAND, "instance_list_data %u %ld %u %s", pDungeon->GetId(), pDungeon->GetMapIndex(), duration, playerNames.c_str());
+		}
+	}
+
+	ch->ChatPacket(CHAT_TYPE_COMMAND, "instance_list_end");
+}
+#endif
 void CDungeon::UniqueSetMaxHP(const std::string& key, int iMaxHP)
 {
 	TUniqueMobMap::iterator it = m_map_UniqueMob.find(key);
@@ -1063,6 +1129,35 @@ struct FExitDungeon
 		}
 	}
 };
+#ifdef ENABLE_INSTANCE_SYSTEM
+void CDungeon::ExitAll()
+{
+	// Create a safe copy of the character set to avoid iterator invalidation
+	// when characters leave the dungeon (and thus are removed from m_set_pkCharacter)
+	std::vector<LPCHARACTER> vecChars;
+	vecChars.reserve(m_set_pkCharacter.size());
+	for (itertype(m_set_pkCharacter) it = m_set_pkCharacter.begin(); it != m_set_pkCharacter.end(); ++it)
+	{
+		vecChars.push_back(*it);
+	}
+
+	for (std::vector<LPCHARACTER>::iterator it = vecChars.begin(); it != vecChars.end(); ++it)
+	{
+		LPCHARACTER ch = *it;
+		if (ch && ch->GetDesc() && ch->IsPC())
+		{
+			ch->ExitToSavedLocation();
+			
+			// Safety: If player is still in the dungeon map, force warp them to Map 1
+			if (ch->GetMapIndex() == m_lMapIndex)
+			{
+				sys_err("ExitAll: Player %s failed to exit, force warping to Map 1", ch->GetName());
+				ch->WarpSet(474300, 954800, 1); // Default to Map 1 coordinates (Red Empire?) - better to use empire spawn
+			}
+		}
+	}
+}
+#else
 
 void CDungeon::ExitAll()
 {
@@ -1079,7 +1174,7 @@ void CDungeon::ExitAll()
 	// <Factor> SECTREE::for_each -> SECTREE::for_each_entity
 	pMap->for_each(f);
 }
-
+#endif
 // DUNGEON_NOTICE
 namespace
 {

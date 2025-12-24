@@ -2505,3 +2505,77 @@ ACMD(do_ride)
     // 타거나 내릴 수 없을때
     ch->ChatPacket(CHAT_TYPE_INFO, LC_TEXT("말을 먼저 소환해주세요."));
 }
+
+
+#ifdef ENABLE_INSTANCE_SYSTEM
+ACMD(do_instance_create)
+{
+	char arg1[256];
+	one_argument(argument, arg1, sizeof(arg1));
+
+	if (!*arg1)
+	{
+		ch->ChatPacket(CHAT_TYPE_INFO, "Usage: /instance_create <map_index>");
+		return;
+	}
+
+	int map_idx = atoi(arg1);
+	if (map_idx <= 0)
+	{
+		ch->ChatPacket(CHAT_TYPE_INFO, "Invalid map index: %s", arg1);
+		return;
+	}
+
+	// Set quest flag that quest will check
+	ch->SetQuestFlag("universal_instance_ui_v2.instance_create_map", map_idx);
+
+	// Trigger quest check by calling login event
+	quest::CQuestManager::instance().Login(ch->GetPlayerID());
+}
+
+ACMD(do_instance_here)
+{
+	// Set quest flag to trigger exit
+	ch->SetQuestFlag("universal_instance_ui.create_instance_now", 1);
+
+	// Trigger quest check by calling login event
+	quest::CQuestManager::instance().Login(ch->GetPlayerID());
+}
+
+
+ACMD(do_instance_exit)
+{
+	// Set quest flag to trigger exit
+	ch->SetQuestFlag("universal_instance_ui_v2.instance_exit_flag", 1);
+
+	// Trigger quest check by calling login event
+	quest::CQuestManager::instance().Login(ch->GetPlayerID());
+}
+ACMD(do_instance_lobby)
+{
+	// Set quest flag to trigger lobby warp
+	ch->SetQuestFlag("universal_instance_ui_v2.instance_lobby_flag", 1);
+
+	// Trigger quest check by calling login event
+	quest::CQuestManager::instance().Login(ch->GetPlayerID());
+}
+
+ACMD(do_instance_home)
+{
+	// Set quest flag to trigger home warp
+	ch->SetQuestFlag("universal_instance_ui_v2.instance_home_flag", 1);
+
+	// Trigger quest check by calling login event
+	quest::CQuestManager::instance().Login(ch->GetPlayerID());
+}
+
+ACMD(do_instance_refresh_map)
+{
+	// Set quest flag to trigger map index refresh
+	ch->SetQuestFlag("universal_instance_ui_v2.instance_refresh_map_flag", 1);
+
+	// Trigger quest check by calling login event
+	quest::CQuestManager::instance().Login(ch->GetPlayerID());
+}
+
+#endif
