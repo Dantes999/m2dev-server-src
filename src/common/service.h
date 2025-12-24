@@ -8,3 +8,5 @@
 #define __UDP_BLOCK__
 
 #endif
+
+#define ENABLE_INSTANCE_SYSTEM

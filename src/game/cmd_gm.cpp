@@ -4408,3 +4408,97 @@ ACMD (do_ds_list)
 			ch->ChatPacket(CHAT_TYPE_INFO, "cell : %d, name : %s, id : %d", item->GetCell(), item->GetName(), item->GetID());
 	}
 }
+#ifdef ENABLE_INSTANCE_SYSTEM
+ACMD(do_instance_list)
+{
+	CDungeonManager::instance().SendInstanceList(ch);
+}
+
+ACMD(do_instance_close)
+{
+	char arg1[256];
+	one_argument(argument, arg1, sizeof(arg1));
+
+	if (!*arg1)
+	{
+		ch->ChatPacket(CHAT_TYPE_INFO, "Usage: instance_close <dungeon_id>");
+		return;
+	}
+
+	DWORD dungeon_id = 0;
+	str_to_number(dungeon_id, arg1);
+
+	LPDUNGEON pDungeon = CDungeonManager::instance().Find(dungeon_id);
+	if (!pDungeon)
+	{
+		ch->ChatPacket(CHAT_TYPE_INFO, "Dungeon %u not found.", dungeon_id);
+		return;
+	}
+
+	long lMapIndex = pDungeon->GetMapIndex();
+	sys_log(0, "GM %s closing instance %u (map %ld)", ch->GetName(), dungeon_id, lMapIndex);
+
+	// SAFE CLOSE FOR UNIVERSAL INSTANCES
+	// Problem: Universal instances don't save exit locations, so ExitAll() crashes
+	// Solution: Manually warp players to their empire towns, then clean up
+
+	// Step 1: Manually warp all players to their empire starting towns
+	struct FWarpToEmpireTown
+	{
+		void operator()(LPENTITY ent)
+		{
+			if (ent->IsType(ENTITY_CHARACTER))
+			{
+				LPCHARACTER ch = (LPCHARACTER) ent;
+				if (ch && ch->IsPC() && ch->GetDesc())
+				{
+					int empire = ch->GetEmpire();
+					long target_x = 474300;  // Empire 1 default
+					long target_y = 954800;
+					long target_map = 1;
+
+					if (empire == 2)
+					{
+						target_map = 21;
+						target_x = 63800;
+						target_y = 166400;
+					}
+					else if (empire == 3)
+					{
+						target_map = 41;
+						target_x = 959900;
+						target_y = 269200;
+					}
+
+					sys_log(0, "GM instance close: Warping player %s (empire %d) to town map %ld",
+						ch->GetName(), empire, target_map);
+
+					ch->ChatPacket(CHAT_TYPE_INFO, "Instance closed by GM. Returning to town...");
+					ch->WarpSet(target_x, target_y, target_map);
+				}
+			}
+		}
+	};
+
+	// Warp all players out
+	LPSECTREE_MAP pMap = SECTREE_MANAGER::instance().GetMap(lMapIndex);
+	if (pMap)
+	{
+		FWarpToEmpireTown f;
+		pMap->for_each(f);
+	}
+
+	// Step 2: Clear dungeon content
+	sys_log(0, "Instance %u: Clearing regen and monsters...", dungeon_id);
+	pDungeon->ClearRegen();
+	pDungeon->Purge();
+
+	// Step 3: Mark instance for auto-cleanup
+	// DON'T call Destroy() immediately because WarpSet() is async - players might still be in dungeon
+	// Let the auto-cleanup timer destroy it after players fully disconnect
+	pDungeon->SetFlag("player_left_time", get_global_time());
+	sys_log(0, "Instance %u: Marked for auto-cleanup", dungeon_id);
+
+	ch->ChatPacket(CHAT_TYPE_INFO, "Instance %u closed. Players kicked, will auto-cleanup in 5 minutes.", dungeon_id);
+}
+#endif

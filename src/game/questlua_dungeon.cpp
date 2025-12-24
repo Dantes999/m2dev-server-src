@@ -190,10 +190,17 @@ namespace quest
 
 	int dungeon_clear_regen(lua_State* L)
 	{
+
 		CQuestManager& q = CQuestManager::instance();
 		LPDUNGEON pDungeon = q.GetCurrentDungeon();
 		if (pDungeon)
+		{
 			pDungeon->ClearRegen();
+		}
+		else
+		{
+			sys_err("dungeon_clear_regen: No current dungeon!");
+		}
 		return 0;
 	}
 
@@ -286,6 +293,8 @@ namespace quest
 		}
 
 		long lMapIndex = (long)lua_tonumber(L,1);
+		int x = (int)lua_tonumber(L, 2);
+		int y = (int)lua_tonumber(L, 3);
 
 		LPDUNGEON pDungeon = CDungeonManager::instance().Create(lMapIndex);
 
@@ -295,10 +304,22 @@ namespace quest
 			return 0;
 		}
 
+		long newMapIndex = pDungeon->GetMapIndex();
+
 		LPCHARACTER ch = CQuestManager::instance().GetCurrentCharacterPtr();
 
+		if (!ch)
+		{
+			sys_err("dungeon_new_jump: no character found!");
+			return 0;
+		}
+
 		//ch->WarpSet(pDungeon->GetMapIndex(), (int) lua_tonumber(L, 2), (int)lua_tonumber(L, 3));
+#ifdef ENABLE_INSTANCE_SYSTEM
+		ch->WarpSet(x, y, newMapIndex);
+#else
 		ch->WarpSet((int) lua_tonumber(L, 2), (int)lua_tonumber(L, 3), pDungeon->GetMapIndex());
+#endif
 		return 0;
 	}
 
@@ -1010,7 +1031,28 @@ namespace quest
 
 		return 0;
 	}
+#ifdef ENABLE_INSTANCE_SYSTEM
+	int dungeon_destroy(lua_State* L)
+	{
+		sys_err("=== dungeon_destroy CALLED ===");
+		CQuestManager& q = CQuestManager::instance();
+		LPDUNGEON pDungeon = q.GetCurrentDungeon();
 
+		if (pDungeon)
+		{
+			sys_err("dungeon_destroy: Destroying dungeon ID %ld, map index %ld", 
+					pDungeon->GetId(), pDungeon->GetMapIndex());
+			CDungeonManager::instance().Destroy(pDungeon->GetId());
+			sys_err("dungeon_destroy: Destroy completed successfully");
+		}
+		else
+		{
+			sys_err("dungeon_destroy: No current dungeon to destroy!");
+		}
+
+		return 0;
+	}
+#endif
 	struct FSayDungeonByItemGroup
 	{
 		const CDungeon::ItemGroup* item_group;
@@ -1286,16 +1328,19 @@ namespace quest
 	int dungeon_select(lua_State* L)
 	{
 		DWORD dwMapIndex = (DWORD) lua_tonumber(L, 1);
+
 		if (dwMapIndex)
 		{
 			LPDUNGEON pDungeon = CDungeonManager::instance().FindByMapIndex(dwMapIndex);
 			if (pDungeon)
 			{
+
 				CQuestManager::instance().SelectDungeon(pDungeon);
 				lua_pushboolean(L, 1);
 			}
 			else
 			{
+				sys_err("dungeon_select: Dungeon %lu NOT FOUND!", dwMapIndex);
 				CQuestManager::instance().SelectDungeon(NULL);
 				lua_pushboolean(L, 0);
 			}
@@ -1425,6 +1470,9 @@ namespace quest
 			{ "join",			dungeon_join		},
 			{ "exit",			dungeon_exit		},
 			{ "exit_all",		dungeon_exit_all	},
+#ifdef ENABLE_INSTANCE_SYSTEM
+			{ "destroy",		dungeon_destroy		},
+#endif
 			{ "set_item_group",	dungeon_set_item_group	},
 			{ "exit_all_by_item_group",	dungeon_exit_all_by_item_group},
 			{ "say_diff_by_item_group",	dungeon_say_diff_by_item_group},
