@@ -172,6 +172,9 @@ class CClientManager : public CNetBase, public singleton<CClientManager>
 	bool		InitializeShopTable();
 	bool		InitializeMobTable();
 	bool		InitializeItemTable();
+#ifdef MOUNT_BONUS_SYSTEM
+	bool		InitializeMountTable();
+#endif
 	bool		InitializeQuestItemTable();
 	bool		InitializeSkillTable();
 	bool		InitializeRefineTable();
@@ -404,6 +407,9 @@ class CClientManager : public CNetBase, public singleton<CClientManager>
 
 	std::vector<TMobTable>			m_vec_mobTable;
 	std::vector<TItemTable>			m_vec_itemTable;
+#ifdef MOUNT_BONUS_SYSTEM
+	std::vector<TMountTable>		m_vec_mountTable;
+#endif
 	std::map<DWORD, TItemTable *>		m_map_itemTableByVnum;
 
 	int					m_iShopTableSize;

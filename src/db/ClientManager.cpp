@@ -258,6 +258,9 @@ void CClientManager::QUERY_BOOT(CPeer* peer, TPacketGDBoot * p)
 		sizeof(BYTE) +
 		sizeof(WORD) + sizeof(WORD) + sizeof(TMobTable) * m_vec_mobTable.size() +
 		sizeof(WORD) + sizeof(WORD) + sizeof(TItemTable) * m_vec_itemTable.size() +
+#ifdef MOUNT_BONUS_SYSTEM
+		sizeof(WORD) + sizeof(WORD) + sizeof(TMountTable) * m_vec_mountTable.size() +
+#endif
 		sizeof(WORD) + sizeof(WORD) + sizeof(TShopTable) * m_iShopTableSize +
 		sizeof(WORD) + sizeof(WORD) + sizeof(TSkillTable) * m_vec_skillTable.size() +
 		sizeof(WORD) + sizeof(WORD) + sizeof(TRefineTable) * m_iRefineTableSize +
@@ -286,6 +289,9 @@ void CClientManager::QUERY_BOOT(CPeer* peer, TPacketGDBoot * p)
 
 	sys_log(0, "sizeof(TMobTable) = %d", sizeof(TMobTable));
 	sys_log(0, "sizeof(TItemTable) = %d", sizeof(TItemTable));
+#ifdef MOUNT_BONUS_SYSTEM
+	sys_log(0, "sizeof(TMountTable) = %d", sizeof(TMountTable));
+#endif
 	sys_log(0, "sizeof(TShopTable) = %d", sizeof(TShopTable));
 	sys_log(0, "sizeof(TSkillTable) = %d", sizeof(TSkillTable));
 	sys_log(0, "sizeof(TRefineTable) = %d", sizeof(TRefineTable));
@@ -308,6 +314,13 @@ void CClientManager::QUERY_BOOT(CPeer* peer, TPacketGDBoot * p)
 	peer->EncodeWORD(m_vec_itemTable.size());
 	peer->Encode(&m_vec_itemTable[0], sizeof(TItemTable) * m_vec_itemTable.size());
 
+#ifdef MOUNT_BONUS_SYSTEM
+	peer->EncodeWORD(sizeof(TMountTable));
+	peer->EncodeWORD(m_vec_mountTable.size());
+	if (m_vec_mountTable.size() > 0)
+		peer->Encode(&m_vec_mountTable[0], sizeof(TMountTable) * m_vec_mountTable.size());
+
+#endif
 	peer->EncodeWORD(sizeof(TShopTable));
 	peer->EncodeWORD(m_iShopTableSize);
 	peer->Encode(m_pShopTable, sizeof(TShopTable) * m_iShopTableSize);

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "length.h"
+#include "service.h"
 
 typedef	uint32_t IDENT;
 
@@ -1366,5 +1367,40 @@ typedef struct SChannelStatus
 	int16_t nPort;
 	uint8_t bStatus;
 } TChannelStatus;
+
+#ifdef MOUNT_BONUS_SYSTEM
+
+// Mount system constants and enums
+#define MOUNT_APPLY_MAX_NUM 5
+
+enum EMountType
+{
+	MOUNT_TYPE_BASIC = 0,    // +30 speed (20201-20204, 20213, 20216)
+	MOUNT_TYPE_INTERMEDIATE = 1,    // +40 speed (20205-20208, 20214, 20217)
+	MOUNT_TYPE_ADVANCED = 2,    // +50 speed (20209-20212, 20215, 20218)
+	MOUNT_TYPE_SPECIAL = 3,    // Special mounts (future use)
+	MOUNT_TYPE_MAX_NUM
+};
+
+/**
+ * @brief Mount prototype table structure
+ * Defines mount properties including visual vnum, bonuses, and requirements
+ */
+typedef struct SMountTable : public SEntityTable
+{
+	char        szName[CHARACTER_NAME_MAX_LEN + 1];       // Internal name for debugging
+	char        szLocaleName[CHARACTER_NAME_MAX_LEN + 1]; // Localized display name
+
+	uint8_t     bLevel;                                   // Required character level
+	uint8_t     bType;                                    // Mount type (EMountType)
+	uint8_t     bMovementSpeed;                           // Movement speed bonus (30, 40, 50)
+
+	TItemApply  aApplies[MOUNT_APPLY_MAX_NUM];            // Attribute bonuses (DEF, ATT, etc.)
+
+	uint32_t    dwSummonDuration;                         // Default duration in seconds (0 = use quest value)
+	uint8_t     bReserved[8];                             // Reserved for future expansion
+} TMountTable;
+
+#endif
 
 #pragma pack()

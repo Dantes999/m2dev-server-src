@@ -9,6 +9,9 @@
 #include "char.h"
 #include "char_manager.h"
 #include "mob_manager.h"
+#ifdef MOUNT_BONUS_SYSTEM
+#include "mount_manager.h"
+#endif
 #include "motion.h"
 #include "sectree_manager.h"
 #include "shop_manager.h"
@@ -337,6 +340,9 @@ int main(int argc, char **argv)
 	ITEM_MANAGER	item_manager;
 	CShopManager	shop_manager;
 	CMobManager		mob_manager;
+#ifdef MOUNT_BONUS_SYSTEM
+	CMountManager	mount_manager;
+#endif
 	CMotionManager	motion_manager;
 	CPartyManager	party_manager;
 	CSkillManager	skill_manager;
