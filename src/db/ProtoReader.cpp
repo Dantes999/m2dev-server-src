@@ -834,8 +834,69 @@ bool Set_Proto_Item_Table(TItemTable *itemTable, cCsvTable &csvTable,std::map<in
 
 	//test
 	str_to_number(itemTable->bWeight, "0");
-			
+
 	return true;
 }
+#ifdef MOUNT_BONUS_SYSTEM
+bool Set_Proto_Mount_Table(TMountTable *mountTable, cCsvTable &csvTable, std::map<int,const char*> &nameMap)
+{
+	int col = 0;
+
+	// VNUM
+	str_to_number(mountTable->dwVnum, csvTable.AsStringByIndex(col++));
+
+	// NAME
+	strlcpy(mountTable->szName, csvTable.AsStringByIndex(col++), sizeof(mountTable->szName));
+
+	// LOCALE_NAME (with fallback to NAME)
+	const char* localeName = csvTable.AsStringByIndex(col++);
+	if (localeName && strlen(localeName) > 0)
+		strlcpy(mountTable->szLocaleName, localeName, sizeof(mountTable->szLocaleName));
+	else
+		strlcpy(mountTable->szLocaleName, mountTable->szName, sizeof(mountTable->szLocaleName));
+
+	// LEVEL
+	str_to_number(mountTable->bLevel, csvTable.AsStringByIndex(col++));
+
+	// TYPE (enum string to number)
+	std::string typeStr = csvTable.AsStringByIndex(col++);
+	if (typeStr == "MOUNT_TYPE_BASIC")
+		mountTable->bType = MOUNT_TYPE_BASIC;
+	else if (typeStr == "MOUNT_TYPE_INTERMEDIATE")
+		mountTable->bType = MOUNT_TYPE_INTERMEDIATE;
+	else if (typeStr == "MOUNT_TYPE_ADVANCED")
+		mountTable->bType = MOUNT_TYPE_ADVANCED;
+	else if (typeStr == "MOUNT_TYPE_SPECIAL")
+		mountTable->bType = MOUNT_TYPE_SPECIAL;
+	else
+		str_to_number(mountTable->bType, typeStr.c_str());
+
+	// MOV_SPEED
+	str_to_number(mountTable->bMovementSpeed, csvTable.AsStringByIndex(col++));
+
+	// APPLY_TYPE0 through APPLY_TYPE4 (5 bonuses, 2 columns each: type and value)
+	for (int i = 0; i < MOUNT_APPLY_MAX_NUM; ++i)
+	{
+		// APPLY_TYPEx
+		int applyType = get_Item_ApplyType_Value(csvTable.AsStringByIndex(col++));
+		mountTable->aApplies[i].bType = applyType;
+
+		// APPLY_VALUEx
+		str_to_number(mountTable->aApplies[i].lValue, csvTable.AsStringByIndex(col++));
+	}
+
+	// DURATION (optional default)
+	str_to_number(mountTable->dwSummonDuration, csvTable.AsStringByIndex(col++));
+
+	sys_log(0, "MOUNT #%-5d %-24s level: %-3u speed: %u type: %u",
+		mountTable->dwVnum,
+		mountTable->szLocaleName,
+		mountTable->bLevel,
+		mountTable->bMovementSpeed,
+		mountTable->bType);
+
+	return true;
+}
+#endif
 
 #endif

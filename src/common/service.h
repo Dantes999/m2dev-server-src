@@ -12,3 +12,4 @@
 #endif
 
 #define ENABLE_INSTANCE_SYSTEM
+#define MOUNT_BONUS_SYSTEM

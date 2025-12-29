@@ -29,14 +29,22 @@ bool CClientManager::InitializeTables()
 	if (!InitializeItemTable())
 	{
 		sys_err("InitializeItemTable FAILED");
-		return false; 
+		return false;
 	}
 
 	if (!MirrorItemTableIntoDB())
 	{
 		sys_err("MirrorItemTableIntoDB FAILED");
-		return false; 
+		return false;
 	}
+
+#ifdef MOUNT_BONUS_SYSTEM
+	if (!InitializeMountTable())
+	{
+		sys_err("InitializeMountTable FAILED");
+		return false;
+	}
+#endif
 
 	if (!InitializeShopTable())
 	{
@@ -849,6 +857,60 @@ bool CClientManager::InitializeItemTable()
 	return true;
 }
 
+#ifdef MOUNT_BONUS_SYSTEM
+bool CClientManager::InitializeMountTable()
+{
+	sys_log(0, "InitializeMountTable: Loading mount_proto.txt");
+
+	cCsvTable data;
+	if (!data.Load("conf/mount_proto.txt", '\t'))
+	{
+		sys_err("mount_proto.txt file not found or failed to load");
+		// Mount proto is optional for now - return true to allow server to start
+		return true;
+	}
+
+	data.Next(); // Skip header row
+
+	m_vec_mountTable.resize(data.m_File.GetRowCount() - 1);
+	memset(&m_vec_mountTable[0], 0, sizeof(TMountTable) * m_vec_mountTable.size());
+
+	TMountTable* mount_table = &m_vec_mountTable[0];
+
+	// Empty map for localization (not used for mounts yet)
+	std::map<int, const char*> localMap;
+
+	int row_count = 0;
+	while (data.Next())
+	{
+		if (!Set_Proto_Mount_Table(mount_table, data, localMap))
+		{
+			sys_err("Failed to set mount proto table at row %d", row_count + 1);
+		}
+
+		sys_log(0, "MOUNT: #%-5d %-24s level: %-3u speed: %u type: %u applies: %d",
+			mount_table->dwVnum,
+			mount_table->szLocaleName,
+			mount_table->bLevel,
+			mount_table->bMovementSpeed,
+			mount_table->bType,
+			[mount_table]() {
+				int count = 0;
+				for (int i = 0; i < MOUNT_APPLY_MAX_NUM; ++i)
+					if (mount_table->aApplies[i].bType != APPLY_NONE)
+						count++;
+				return count;
+			}()
+		);
+
+		++mount_table;
+		++row_count;
+	}
+
+	sys_log(0, "InitializeMountTable: Loaded %d mount protos successfully", row_count);
+	return true;
+}
+#endif
 
 bool CClientManager::InitializeSkillTable()
 {

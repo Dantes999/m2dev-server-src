@@ -10,6 +10,9 @@
 #include "packet.h"
 #include "protocol.h"
 #include "mob_manager.h"
+#ifdef MOUNT_BONUS_SYSTEM
+#include "mount_manager.h"
+#endif
 #include "shop_manager.h"
 #include "sectree_manager.h"
 #include "skill.h"
@@ -560,6 +563,34 @@ void CInputDB::Boot(const char* data)
 		data += size * sizeof(TItemTable);
 	}
 
+	/*
+	 * MOUNT
+	 */
+#ifdef MOUNT_BONUS_SYSTEM
+	if (decode_2bytes(data) != sizeof(TMountTable))
+	{
+		sys_err("mount table size error");
+		thecore_shutdown();
+		return;
+	}
+	data += 2;
+
+	size = decode_2bytes(data);
+	data += 2;
+	sys_log(0, "BOOT: MOUNT: %d", size);
+
+	if (size)
+	{
+		CMountManager::instance().Initialize((TMountTable *) data, size);
+		data += size * sizeof(TMountTable);
+	}
+#else
+	// Skip mount proto if MOUNT_BONUS_SYSTEM not defined
+	data += 2; // skip sizeof
+	size = decode_2bytes(data);
+	data += 2; // skip size
+	data += size * sizeof(TMountTable); // skip data
+#endif
 	/*
 	 * SHOP
 	 */

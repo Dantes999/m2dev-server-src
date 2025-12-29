@@ -22,6 +22,9 @@
 #include "utils.h"
 #include "unique_item.h"
 #include "mob_manager.h"
+#ifdef MOUNT_BONUS_SYSTEM
+#include "mount_manager.h"
+#endif
 #include <cctype>
 
 #undef sys_err
@@ -1257,65 +1260,145 @@ namespace quest
 
 		LPCHARACTER ch = CQuestManager::instance().GetCurrentCharacterPtr();
 
+		// Remove old mount affects
 		ch->RemoveAffect(AFFECT_MOUNT);
 		ch->RemoveAffect(AFFECT_MOUNT_BONUS);
 
-		// 말이 소환되어 따라다니는 상태라면 말부터 없앰
 		if (ch->GetHorse())
 			ch->HorseSummon(false);
 
 		if (mount_vnum)
 		{
+#ifdef MOUNT_BONUS_SYSTEM
+			// Lookup mount proto
+			const CMountProto* proto = CMountManager::instance().Get(mount_vnum);
+
+			if (!proto)
+			{
+				// Mount proto not found - use legacy hardcoded behavior for backward compatibility
+				sys_log(0, "pc_mount: Mount proto #%u not found, using legacy behavior", mount_vnum);
+
+				ch->AddAffect(AFFECT_MOUNT, POINT_MOUNT, mount_vnum, AFF_NONE, length, 0, true);
+
+				// Legacy hardcoded speed bonuses
+				switch (mount_vnum)
+				{
+				case 20201: case 20202: case 20203: case 20204: case 20213: case 20216:
+					ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 30, AFF_NONE, length, 0, true, true);
+					break;
+				case 20205: case 20206: case 20207: case 20208: case 20214: case 20217:
+					ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 40, AFF_NONE, length, 0, true, true);
+					break;
+				case 20209: case 20210: case 20211: case 20212: case 20215: case 20218:
+					ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 50, AFF_NONE, length, 0, true, true);
+					break;
+				}
+
+				return 0;
+			}
+
+			// Check level requirement
+			if (ch->GetLevel() < proto->GetLevel())
+			{
+				sys_log(0, "pc_mount: Character level %d < mount level requirement %d",
+					ch->GetLevel(), proto->GetLevel());
+				return 0;
+			}
+
+			// 1. Add visual mount affect
 			ch->AddAffect(AFFECT_MOUNT, POINT_MOUNT, mount_vnum, AFF_NONE, length, 0, true);
+
+			// 2. Add movement speed bonus from proto
+			if (proto->GetMovSpeed() > 0)
+			{
+				ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, proto->GetMovSpeed(),
+					AFF_NONE, length, 0, true, true);
+
+				sys_log(0, "pc_mount: Applied movement speed bonus %d", proto->GetMovSpeed());
+			}
+
+			// 3. Auto-apply all attribute bonuses from proto
+			for (int i = 0; i < MOUNT_APPLY_MAX_NUM; ++i)
+			{
+				const TItemApply* apply = proto->GetApply(i);
+				if (apply && apply->bType != APPLY_NONE)
+				{
+					// Add as AFFECT_MOUNT_BONUS so it can be removed together with mount
+					ch->AddAffect(AFFECT_MOUNT_BONUS,
+						aApplyInfo[apply->bType].bPointType,
+						apply->lValue,
+						AFF_NONE,
+						length,
+						0,
+						false);
+
+					sys_log(0, "pc_mount: Applied bonus %d - type=%d value=%d",
+						i, apply->bType, apply->lValue);
+				}
+			}
+
+			sys_log(0, "pc_mount: Mounted %u (%s) for %d seconds with %d bonuses",
+				mount_vnum, proto->GetName(), length, proto->GetApplyCount());
+#else
 			switch (mount_vnum)
 			{
-			case 20201:
-			case 20202:
-			case 20203:
-			case 20204:
-			case 20213:
-			case 20216:
-			ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 30, AFF_NONE, length, 0, true, true);
-			break;
+				case 20201:
+				case 20202:
+				case 20203:
+				case 20204:
+				case 20213:
+				case 20216:
+					ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 30, AFF_NONE, length, 0, true, true);
+					break;
 
-			case 20205:
-			case 20206:
-			case 20207:
-			case 20208:
-			case 20214:
-			case 20217:
-			ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 40, AFF_NONE, length, 0, true, true);
-			break;
+				case 20205:
+				case 20206:
+				case 20207:
+				case 20208:
+				case 20214:
+				case 20217:
+					ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 40, AFF_NONE, length, 0, true, true);
+					break;
 
-			case 20209:
-			case 20210:
-			case 20211:
-			case 20212:
-			case 20215:
-			case 20218:
-			ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 50, AFF_NONE, length, 0, true, true);
-			break;
-
+				case 20209:
+				case 20210:
+				case 20211:
+				case 20212:
+				case 20215:
+				case 20218:
+					ch->AddAffect(AFFECT_MOUNT, POINT_MOV_SPEED, 50, AFF_NONE, length, 0, true, true);
+					break;
 			}
+#endif
 		}
-		
+
 		return 0;
 	}
 
 	int pc_mount_bonus(lua_State* L)
 	{
+#ifdef MOUNT_BONUS_SYSTEM
+		// DEPRECATED: Mount bonuses are now automatically applied from mount_proto.txt
+		// This function is kept for backward compatibility with existing quest scripts
+		// but does nothing - bonuses are applied by pc_mount() from the mount proto
+
+		sys_log(0, "pc_mount_bonus: DEPRECATED - bonuses now auto-applied from mount proto");
+
+		// Quest scripts that still call this function will continue to work
+		// The bonuses they try to apply are ignored since they come from mount proto now
+#else
 		BYTE applyOn = static_cast<BYTE>(lua_tonumber(L, 1));
 		long value = static_cast<long>(lua_tonumber(L, 2));
 		long duration = static_cast<long>(lua_tonumber(L, 3));
 
 		LPCHARACTER ch = CQuestManager::instance().GetCurrentCharacterPtr();
 
-		if( NULL != ch )
+		if (NULL != ch)
 		{
 			ch->RemoveAffect(AFFECT_MOUNT_BONUS);
 			ch->AddAffect(AFFECT_MOUNT_BONUS, aApplyInfo[applyOn].bPointType, value, AFF_NONE, duration, 0, false);
 		}
-
+#endif
 		return 0;
 	}
 

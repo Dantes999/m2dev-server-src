@@ -32,5 +32,8 @@ int get_Mob_ImmuneFlag_Value(std::string inputString);
 //
 bool Set_Proto_Mob_Table(TMobTable *mobTable, cCsvTable &csvTable, std::map<int,const char*> &nameMap);
 bool Set_Proto_Item_Table(TItemTable *itemTable, cCsvTable &csvTable,std::map<int,const char*> &nameMap);
+#ifdef MOUNT_BONUS_SYSTEM
+bool Set_Proto_Mount_Table(TMountTable *mountTable, cCsvTable &csvTable, std::map<int,const char*> &nameMap);
+#endif
 
 #endif
