@@ -80,7 +80,7 @@ bool CInputProcessor::Process(LPDESC lpDesc, const void * c_pvOrig, int iBytes, 
 			);
 
 			if (lpDesc->GetPhase() < PHASE_SELECT) // early phase
-				sys_log(0, szLogBuffer);
+				sys_packet(szLogBuffer);
 			else
 				sys_err(szLogBuffer);
 
@@ -94,7 +94,7 @@ bool CInputProcessor::Process(LPDESC lpDesc, const void * c_pvOrig, int iBytes, 
 #ifdef _DEBUG
 		const auto ch = lpDesc->GetCharacter();
 		const std::string stName = ch ? ch->GetName() : lpDesc->GetHostName();
-		sys_log(0, "RECEIVED HEADER : %u(0x%X) to %s  (size %d) ", bHeader, bHeader, stName.c_str(), iBytes);
+		sys_packet("RECEIVED HEADER : %u(0x%X) to %s  (size %d) ", bHeader, bHeader, stName.c_str(), iBytes);
 #endif
 
 		if (m_iBufferLeft < iPacketLen)
@@ -103,7 +103,7 @@ bool CInputProcessor::Process(LPDESC lpDesc, const void * c_pvOrig, int iBytes, 
 		if (bHeader)
 		{
 			if (test_server && bHeader != HEADER_CG_MOVE)
-				sys_log(0, "Packet Analyze [Header %d][bufferLeft %d] ", bHeader, m_iBufferLeft);
+				sys_packet("Packet Analyze [Header %d][bufferLeft %d] ", bHeader, m_iBufferLeft);
 
 			m_pPacketInfo->Start();
 
@@ -130,7 +130,7 @@ bool CInputProcessor::Process(LPDESC lpDesc, const void * c_pvOrig, int iBytes, 
 		// END_OF_TRAFFIC_PROFILER
 
 		if (bHeader == HEADER_CG_PONG)
-			sys_log(0, "PONG! %u %u", m_pPacketInfo->IsSequence(bHeader), *(BYTE *) (c_pData + iPacketLen - sizeof(BYTE)));
+			sys_packet("PONG! %u %u", m_pPacketInfo->IsSequence(bHeader), *(BYTE *) (c_pData + iPacketLen - sizeof(BYTE)));
 
 		if (m_pPacketInfo->IsSequence(bHeader))
 		{

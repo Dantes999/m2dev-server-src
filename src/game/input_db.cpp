@@ -493,8 +493,8 @@ void CInputDB::Boot(const char* data)
 	BYTE bVersion = decode_byte(data);
 	data += 1;
 
-	sys_log(0, "BOOT: PACKET: %d", dwPacketSize);
-	sys_log(0, "BOOT: VERSION: %d", bVersion);
+	sys_instance("BOOT: PACKET: %d", dwPacketSize);
+	sys_instance("BOOT: VERSION: %d", bVersion);
 	if (bVersion != 6)
 	{
 		sys_err("boot version error");
@@ -532,7 +532,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: MOB: %d", size);
+	sys_instance("BOOT: MOB: %d", size);
 
 	if (size)
 	{
@@ -554,7 +554,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: ITEM: %d", size);
+	sys_instance("BOOT: ITEM: %d", size);
 
 
 	if (size)
@@ -577,7 +577,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: MOUNT: %d", size);
+	sys_instance("BOOT: MOUNT: %d", size);
 
 	if (size)
 	{
@@ -605,7 +605,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: SHOP: %d", size);
+	sys_instance("BOOT: SHOP: %d", size);
 
 
 	if (size)
@@ -633,7 +633,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: SKILL: %d", size);
+	sys_instance("BOOT: SKILL: %d", size);
 
 	if (size)
 	{
@@ -659,7 +659,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: REFINE: %d", size);
+	sys_instance("BOOT: REFINE: %d", size);
 
 	if (size)
 	{
@@ -680,7 +680,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: ITEM_ATTR: %d", size);
+	sys_instance("BOOT: ITEM_ATTR: %d", size);
 
 	if (size)
 	{
@@ -712,7 +712,7 @@ void CInputDB::Boot(const char* data)
 
 	size = decode_2bytes(data);
 	data += 2;
-	sys_log(0, "BOOT: ITEM_RARE: %d", size);
+	sys_instance("BOOT: ITEM_RARE: %d", size);
 
 	if (size)
 	{

@@ -317,6 +317,8 @@ int main(int argc, char **argv)
 {
 	log_init();
 
+	sys_instance("=== GAME SERVER STARTUP INITIATED ===");
+
 #ifdef DEBUG_ALLOC
 	DebugAllocator::StaticSetUp();
 #endif
@@ -447,38 +449,38 @@ int main(int argc, char **argv)
 		} while (1);
 	}
 
-	sys_log(0, "<shutdown> Destroying CArenaManager...");
+	sys_instance("<shutdown> Destroying CArenaManager...");
 	arena_manager.Destroy();
-	sys_log(0, "<shutdown> Destroying COXEventManager...");
+	sys_instance("<shutdown> Destroying COXEventManager...");
 	OXEvent_manager.Destroy();
 
-	sys_log(0, "<shutdown> Disabling signal timer...");
+	sys_instance("<shutdown> Disabling signal timer...");
 	signal_timer_disable();
 
-	sys_log(0, "<shutdown> Shutting down CHARACTER_MANAGER...");
+	sys_instance("<shutdown> Shutting down CHARACTER_MANAGER...");
 	char_manager.GracefulShutdown();
-	sys_log(0, "<shutdown> Shutting down ITEM_MANAGER...");
+	sys_instance("<shutdown> Shutting down ITEM_MANAGER...");
 	item_manager.GracefulShutdown();
 
-	sys_log(0, "<shutdown> Flushing db_clientdesc...");
+	sys_instance("<shutdown> Flushing db_clientdesc...");
 	db_clientdesc->FlushOutput();
-	sys_log(0, "<shutdown> Flushing p2p_manager...");
+	sys_instance("<shutdown> Flushing p2p_manager...");
 	p2p_manager.FlushOutput();
 
-	sys_log(0, "<shutdown> Destroying CShopManager...");
+	sys_instance("<shutdown> Destroying CShopManager...");
 	shop_manager.Destroy();
-	sys_log(0, "<shutdown> Destroying CHARACTER_MANAGER...");
+	sys_instance("<shutdown> Destroying CHARACTER_MANAGER...");
 	char_manager.Destroy();
-	sys_log(0, "<shutdown> Destroying ITEM_MANAGER...");
+	sys_instance("<shutdown> Destroying ITEM_MANAGER...");
 	item_manager.Destroy();
-	sys_log(0, "<shutdown> Destroying DESC_MANAGER...");
+	sys_instance("<shutdown> Destroying DESC_MANAGER...");
 	desc_manager.Destroy();
-	sys_log(0, "<shutdown> Destroying quest::CQuestManager...");
+	sys_instance("<shutdown> Destroying quest::CQuestManager...");
 	quest_manager.Destroy();
-	sys_log(0, "<shutdown> Destroying building::CManager...");
+	sys_instance("<shutdown> Destroying building::CManager...");
 	building_manager.Destroy();
 
-	sys_log(0, "<shutdown> Flushing TrafficProfiler...");
+	sys_instance("<shutdown> Flushing TrafficProfiler...");
 	trafficProfiler.Flush();
 
 	destroy();
@@ -486,6 +488,8 @@ int main(int argc, char **argv)
 #ifdef DEBUG_ALLOC
 	DebugAllocator::StaticTearDown();
 #endif
+
+	sys_instance("=== GAME SERVER SHUTDOWN COMPLETE ===");
 
 	log_destroy();
 	return 1;
@@ -596,6 +600,8 @@ int start(int argc, char **argv)
 		fprintf(stderr, "Could not initialize thecore, check owner of pid, syslog\n");
 		exit(0);
 	}
+
+	sys_instance("Server initialization complete, entering main loop");
 
 	if (false == CThreeWayWar::instance().LoadSetting("forkedmapindex.txt"))
 	{
