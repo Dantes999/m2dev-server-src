@@ -858,19 +858,6 @@ bool Set_Proto_Mount_Table(TMountTable *mountTable, cCsvTable &csvTable, std::ma
 	// LEVEL
 	str_to_number(mountTable->bLevel, csvTable.AsStringByIndex(col++));
 
-	// TYPE (enum string to number)
-	std::string typeStr = csvTable.AsStringByIndex(col++);
-	if (typeStr == "MOUNT_TYPE_BASIC")
-		mountTable->bType = MOUNT_TYPE_BASIC;
-	else if (typeStr == "MOUNT_TYPE_INTERMEDIATE")
-		mountTable->bType = MOUNT_TYPE_INTERMEDIATE;
-	else if (typeStr == "MOUNT_TYPE_ADVANCED")
-		mountTable->bType = MOUNT_TYPE_ADVANCED;
-	else if (typeStr == "MOUNT_TYPE_SPECIAL")
-		mountTable->bType = MOUNT_TYPE_SPECIAL;
-	else
-		str_to_number(mountTable->bType, typeStr.c_str());
-
 	// MOV_SPEED
 	str_to_number(mountTable->bMovementSpeed, csvTable.AsStringByIndex(col++));
 
@@ -888,12 +875,11 @@ bool Set_Proto_Mount_Table(TMountTable *mountTable, cCsvTable &csvTable, std::ma
 	// DURATION (optional default)
 	str_to_number(mountTable->dwSummonDuration, csvTable.AsStringByIndex(col++));
 
-	sys_log(0, "MOUNT #%-5d %-24s level: %-3u speed: %u type: %u",
+	sys_log(0, "MOUNT #%-5d %-24s level: %-3u speed: %u",
 		mountTable->dwVnum,
 		mountTable->szLocaleName,
 		mountTable->bLevel,
-		mountTable->bMovementSpeed,
-		mountTable->bType);
+		mountTable->bMovementSpeed);
 
 	return true;
 }

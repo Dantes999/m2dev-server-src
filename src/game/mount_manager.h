@@ -24,7 +24,6 @@ class CMountProto
 		const char*	GetLocaleName() const	{ return m_table.szLocaleName; }
 		uint8_t		GetMovSpeed() const		{ return m_table.bMovementSpeed; }
 		uint8_t		GetLevel() const		{ return m_table.bLevel; }
-		uint8_t		GetType() const			{ return m_table.bType; }
 
 		/**
 		 * Get specific apply bonus by index

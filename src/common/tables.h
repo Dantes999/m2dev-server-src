@@ -1392,7 +1392,6 @@ typedef struct SMountTable : public SEntityTable
 	char        szLocaleName[CHARACTER_NAME_MAX_LEN + 1]; // Localized display name
 
 	uint8_t     bLevel;                                   // Required character level
-	uint8_t     bType;                                    // Mount type (EMountType)
 	uint8_t     bMovementSpeed;                           // Movement speed bonus (30, 40, 50)
 
 	TItemApply  aApplies[MOUNT_APPLY_MAX_NUM];            // Attribute bonuses (DEF, ATT, etc.)

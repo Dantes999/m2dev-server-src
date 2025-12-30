@@ -888,12 +888,11 @@ bool CClientManager::InitializeMountTable()
 			sys_err("Failed to set mount proto table at row %d", row_count + 1);
 		}
 
-		sys_log(0, "MOUNT: #%-5d %-24s level: %-3u speed: %u type: %u applies: %d",
+		sys_log(0, "MOUNT: #%-5d %-24s level: %-3u speed: %u applies: %d",
 			mount_table->dwVnum,
 			mount_table->szLocaleName,
 			mount_table->bLevel,
 			mount_table->bMovementSpeed,
-			mount_table->bType,
 			[mount_table]() {
 				int count = 0;
 				for (int i = 0; i < MOUNT_APPLY_MAX_NUM; ++i)

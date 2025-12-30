@@ -85,12 +85,11 @@ bool CMountManager::Initialize(TMountTable* table, int size)
 			m_map_pkMountByName[proto->GetName()] = proto;
 
 		// Log mount details
-		sys_log(0, "MOUNT_MANAGER: Loaded mount #%u '%s' (level: %d, speed: %d, type: %d, applies: %d)",
+		sys_log(0, "MOUNT_MANAGER: Loaded mount #%u '%s' (level: %d, speed: %d, applies: %d)",
 			proto->GetVnum(),
 			proto->GetName(),
 			proto->GetLevel(),
 			proto->GetMovSpeed(),
-			proto->GetType(),
 			proto->GetApplyCount()
 		);
 
